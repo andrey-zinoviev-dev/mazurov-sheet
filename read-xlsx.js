@@ -43,6 +43,58 @@ const MIME_GOOGLE_SHEET = "application/vnd.google-apps.spreadsheet";
 const MIME_XLSX =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
+//categories
+const CATEGORY_MAP = {
+  // Камеры и оптика
+  "камеры": "camera",
+  "объективы": "lens",
+  "адаптеры": "adapter",
+  "фильтры": "filter",
+  "стабилизаторы": "stabilizer",
+  "фокус": "focus",
+  "риги": "rig",
+  
+  // Звук
+  "звук": "audio_mixer",
+  "микшеры": "audio_mixer",
+  "рекордеры": "audio_recorder",
+  "радиосистемы": "wireless_mic",
+  "микрофоны": "dynamic_mic",
+  "мониторинг": "iem",
+  "интерфейсы": "audio_interface",
+  "акустика": "speaker",
+  "кабели xlr": "xlr_cable",
+  
+  // Свет
+  "свет": "light_fixture",
+  "приборы": "light_fixture",
+  "модификаторы": "light_modifier",
+  "стойки": "light_stand",
+  "грип": "grip",
+  "флаги": "flag",
+  "сетки": "frame",
+  "питание": "light_power",
+  
+  // Видео и трансляция
+  "мониторы": "video_monitor",
+  "плейбек": "video_monitor",
+  "конвертеры": "converter",
+  "захват": "capture",
+  "кабели": "cable",
+  "трансляция": "broadcast",
+  
+  // Прочее
+  "память": "storage",
+  "карты памяти": "storage",
+  "компьютеры": "computer",
+  "кейсы": "case",
+  "сумки": "bag",
+  "инструменты": "tool",
+  "аккумуляторы": "battery",
+  "тележки": "cart",
+  "комплекты": "kit"
+};
+
 function isHttpStatus(err, status) {
   const s = err?.code;
   if (s === status || s === String(status)) return true;
