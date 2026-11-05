@@ -3,3 +3,4 @@ google-credentials.json
 .env
 .drive-import-state.json
 rental-sync-api-b0d11bc76774.json
+last_sync.txt

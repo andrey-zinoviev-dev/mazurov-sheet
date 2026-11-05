@@ -9,7 +9,7 @@ const fs = require("fs");
  *
  * Секции (подкатегории) определяются по оформлению колонки A:
  * bold + серый фон + fontSize 20 → upsert в categories (parent_id = id листа-родителя).
- * Товары: category_id → categories.id, image, price DECIMAL, item_order.
+ * Товары: category_id → categories.id, price DECIMAL, item_order.
  *
  * last_sync.txt: синхронизация только если таблица в Drive изменилась.
  */
@@ -32,9 +32,8 @@ const SHEETS_CONFIG = Object.keys(SHEET_TO_PARENT);
  * Задайте SHEET_DATA_FIRST_ROW в .env, если нужно отрезать служебные строки сверху.
  */
 const _firstRowParsed = parseInt(process.env.SHEET_DATA_FIRST_ROW ?? "1", 10);
-const SHEET_DATA_FIRST_ROW =
-    Number.isFinite(_firstRowParsed) && _firstRowParsed >= 1 ? _firstRowParsed : 1;
-
+// const SHEET_DATA_FIRST_ROW = process.env.SHEET_DATA_FIRST_ROW ? process.env.SHEET_DATA_FIRST_ROW : Number.isFinite(_firstRowParsed) && _firstRowParsed >= 1 ? _firstRowParsed : 1;
+const SHEET_DATA_FIRST_ROW = Number(process.env.SHEET_DATA_FIRST_ROW) || 3;
 const LAST_SYNC_FILE = path.join(__dirname, "last_sync.txt");
 
 const CYR_TO_LAT = {
@@ -271,19 +270,18 @@ async function ensureRootCategories(connection) {
     return { parentIdsBySlug, uncategorizedId };
 }
 
-async function upsertProduct(connection, { id, name, price, stock, categoryId, image, itemOrder }) {
+async function upsertProduct(connection, { id, name, price, stock, categoryId, itemOrder }) {
     await connection.execute(
-        `INSERT INTO products (id, name, category_id, price, stock, image, item_order, is_active)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        `INSERT INTO products (id, name, category_id, price, stock, item_order, is_active)
+         VALUES (?, ?, ?, ?, ?, ?, 1)
          ON DUPLICATE KEY UPDATE
            name = VALUES(name),
            category_id = VALUES(category_id),
            price = VALUES(price),
            stock = VALUES(stock),
-           image = VALUES(image),
            item_order = VALUES(item_order),
            is_active = 1`,
-        [id, name, categoryId, price, stock, image, itemOrder]
+        [id, name, categoryId, price, stock, itemOrder]
     );
 }
 
@@ -305,8 +303,7 @@ function parseProductRow(row) {
         ) || 0;
     // В таблице — полная цена, в каталог пишем половину (DECIMAL)
     const price = Math.round((priceSheet / 2) * 100) / 100;
-    const image = row[5] ? String(row[5]).trim() || null : null;
-    return { id, name, stock, price, image };
+    return { id, name, stock, price };
 }
 
 /** Нужна ли синхронизация: сравниваем modifiedTime таблицы в Drive с last_sync.txt. */
@@ -398,7 +395,7 @@ async function runSync() {
 
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId,
-                range: `${sheetName}!A${SHEET_DATA_FIRST_ROW}:F`,
+                range: `${sheetName}!A${SHEET_DATA_FIRST_ROW}:${process.env.SHEET_END_COLUMN}`,
             });
 
             const rows = response.data.values;
@@ -466,7 +463,6 @@ async function runSync() {
                     price: product.price,
                     stock: product.stock,
                     categoryId,
-                    image: product.image,
                     itemOrder,
                 });
                 allProcessedSkus.push(product.id);
